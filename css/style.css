@@ -1,5 +1,5 @@
 /* =========================================================
-   Austin Franklin :: style.css
+   Emma Doris Morcos :: style.css
    1. Colours and sizes
    2. Base
    3. Header
@@ -11,47 +11,65 @@
 
 
 /* ---------- 1. Colours and sizes ----------
-   One ink, one paper, one accent: the page reads like a printed score.
+   Grey paper, red-orange type: an editorial fashion-folio feel.
    main.js reads these same variables, so the canvas always matches. */
 :root {
   color-scheme: light;
-  --paper: #ffffff;
-  --ink: #111214;
-  --muted: #6b6f73;
-  --accent: #2b44d6;
-  --tile: #f1f2f0;
+  --paper: #f2f1ee;   /* top of the page */
+  --band: #e3e2df;    /* darker grey from "Select Works" down (painted by main.js) */
+  --ink: #bf2b08;     /* body text: deep red-orange, readable on both greys */
+  --accent: #ff3d17;  /* big display type, moving dots */
+  --muted: #9a4a36;   /* footer, resting dots */
+  --tile: #faf9f7;    /* background of each motif box */
 
-  --edge: clamp(1rem, 4vw, 3rem);
+  --serif: "Instrument Serif", "Times New Roman", serif;
+  --sans: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+
+  --edge: clamp(1rem, 3vw, 2.5rem);
   --gap: clamp(1rem, 2.5vw, 2rem);
+  --display-size: clamp(4rem, 19.5vw, 24rem);
 }
-
+/* dark mode settings */
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --paper: #101113;
-    --ink: #eceeea;
-    --muted: #9a9ea2;
-    --accent: #8a98ff;
-    --tile: #1a1c1f;
+    --paper: #121110;
+    --band: #1b1a18;
+    --ink: #ff6a47;
+    --accent: #ff4a24;
+    --muted: #b0705f;
+    --tile: #232120;
   }
 }
 
 
 /* ---------- 2. Base ---------- */
+/* width and height has padding */
 *, *::before, *::after { box-sizing: border-box; }
 
+/* pages background colour, text font and spacing */
 body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
-  font-size: 1.125rem;
-  line-height: 1.5;
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.45;
 }
 
 a { color: inherit; text-underline-offset: 0.2em; }
 a:hover { color: var(--accent); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* Visually hidden, still read by screen readers */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 
 /* The canvas is fixed behind the page and lets clicks through */
 #stage {
@@ -62,6 +80,7 @@ a:hover { color: var(--accent); }
 }
 #stage canvas { display: block; }
 
+/* header, content, footer position */
 .top, main, .bottom {
   position: relative;
   z-index: 1;
@@ -69,100 +88,172 @@ a:hover { color: var(--accent); }
 
 
 /* ---------- 3. Header ---------- */
+/* top menu bar */
 .top {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   padding: var(--edge);
+  font-size: 0.85rem;
 }
 
 .logo {
   font-weight: 700;
-  font-size: 1.35rem;
-  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   text-decoration: none;
+  color: var(--accent);
 }
 
-.top nav { display: flex; gap: 1.5rem; }
+.top nav { display: flex; gap: 1.25rem; }
 .top nav a { text-decoration: none; }
 
 main { padding: 0 var(--edge); }
 
 
 /* ---------- 4. Intro ---------- */
-.intro {
-  max-width: 40rem;
-  padding: clamp(2rem, 10vh, 6rem) 0;
-  font-size: clamp(1.2rem, 2vw, 1.45rem);
-  line-height: 1.4;
-}
-
-/* The name is already in the logo; the h1 stays for screen readers */
-.intro h1 {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-}
-
-.intro p { margin: 0 0 1em; }
+.intro { padding-bottom: clamp(3rem, 10vh, 6rem); }
 
 .contact {
-  font-weight: 700;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  text-decoration: none;
+}
+
+/* The huge serif line across the page */
+.display {
+  margin: 0.12em 0 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: var(--display-size);
+  line-height: 0.82;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+  overflow-x: clip;
+}
+
+/* intro text and art (waveform) */
+.hero {
+  display: grid;
+  gap: var(--gap);
+  margin-top: 2rem;
+}
+
+.hero-text p {
+  margin: 0 0 1em;
+  max-width: 30rem;
+}
+
+.hero-art { margin: 0; }
+
+.hero-art figcaption { margin-top: 0.8rem; }
+
+.hero-art .name {
+  display: block;
+  font-family: var(--serif);
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  line-height: 1;
+  text-transform: uppercase;
   color: var(--accent);
 }
 
+.hero-art em {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+}
+
+/* wide screens: text bottom-left, the motif box rises into the big word */
+@media (min-width: 52rem) {
+  .hero {
+    grid-template-columns: 5fr 6fr;
+    gap: calc(var(--gap) * 2);
+    align-items: end;
+    margin-top: 0;
+  }
+  .hero-art { margin-top: calc(var(--display-size) * -0.5); }
+}
+
+/* every motif box keeps the same shape */
+.art { aspect-ratio: 4 / 3; }
+
 
 /* ---------- 5. Work grid ---------- */
+.work { padding: clamp(2.5rem, 6vh, 4rem) 0 clamp(3rem, 8vh, 5rem); }
+
+/* select works section */
+.label {
+  margin: 0 0 clamp(2rem, 6vh, 4rem);
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.3rem, 2vw, 1.6rem);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
 .grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
-  gap: calc(var(--gap) * 1.5) var(--gap);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: calc(var(--gap) * 2) var(--gap);
 }
 
-/* Empty box: Pixi paints the background and the motif inside it */
-.art { aspect-ratio: 4 / 3; }
-
-.tile h2 {
-  font-size: 1.25rem;
-  letter-spacing: -0.01em;
-  margin: 0.7rem 0 0.1rem;
+/* titles that overlap the bottom of the image */
+.title {
+  position: relative;
+  margin: -0.55em 0 0.35rem;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
-.tags {
+.soon {
   margin: 0;
-  font-size: 0.95rem;
-  color: var(--muted);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
 }
 
-.tile:hover h2 { color: var(--accent); }
+.tile:hover .title { color: var(--ink); }
 
 
 /* ---------- 6. About ---------- */
-.about { padding: clamp(4rem, 12vh, 8rem) 0 3rem; }
+.about { padding: clamp(3rem, 10vh, 6rem) 0 clamp(3rem, 8vh, 5rem); }
 
 .about > h2 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  letter-spacing: -0.03em;
-  margin: 0 0 2rem;
+  margin: 0 0 clamp(2rem, 5vh, 3.5rem);
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(3.5rem, 13vw, 12rem);
+  line-height: 0.85;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
 .cols {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
   gap: var(--gap) calc(var(--gap) * 2);
-  max-width: 64rem;
+  max-width: 70rem;
 }
 
 .cols h3 {
-  font-size: 1rem;
+  margin: 0 0 0.5rem;
+  font-family: var(--serif);
+  font-style: italic;
   font-weight: 400;
-  color: var(--muted);
-  margin: 0 0 0.6rem;
+  font-size: 1.35rem;
 }
 
 .cols h3:not(:first-child) { margin-top: 2rem; }
@@ -177,7 +268,7 @@ main { padding: 0 var(--edge); }
   gap: 1rem;
   padding: 2rem var(--edge);
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .bottom p { margin: 0; }

@@ -1,17 +1,19 @@
 // =========================================================
-// Austin Franklin :: main.js
+// Emma Doris Morcos :: main.js
 //
-// One PixiJS canvas sits behind the page and draws two things:
-//   1. a field of dots that the pointer pushes and clicks ripple through
-//   2. a generative image inside every project tile
+// One PixiJS canvas sits behind the page and draws three things:
+//   1. the darker grey band behind the lower half of the page
+//   2. a field of dots that the pointer pushes and clicks ripple through
+//   3. a generative image inside every project tile (and the hero)
 //
 // Structure:
-//   setup -> colours -> input -> dot field -> motifs -> frame loop
+//   setup -> colours -> input -> band -> dot field -> motifs -> frame loop
 // =========================================================
 
 
 // ---------- Setup ----------
 
+// connects to pixiJS, fills the window
 const app = new PIXI.Application();
 await app.init({
   resizeTo: window,
@@ -22,22 +24,23 @@ await app.init({
 });
 document.getElementById("stage").appendChild(app.canvas);
 
-// Two layers: drawn in this order, so tiles cover the dots
+// three layers, drawn in this order: band, then dots on top of it, then tiles
+const bandLayer = new PIXI.Graphics();
 const fieldLayer = new PIXI.Graphics();
 const artLayer = new PIXI.Graphics();
-app.stage.addChild(fieldLayer, artLayer);
+app.stage.addChild(bandLayer, fieldLayer, artLayer);
 
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 
 // ---------- Colours ----------
-// Read from the CSS variables so the canvas follows light and dark mode.
+// adds a dark and light mode, editing css
 
 const colours = {};
 
 function readColours() {
   const css = getComputedStyle(document.documentElement);
-  for (const name of ["ink", "muted", "accent", "tile"]) {
+  for (const name of ["ink", "muted", "accent", "tile", "band"]) {
     colours[name] = new PIXI.Color(css.getPropertyValue(`--${name}`).trim()).toNumber();
   }
 }
@@ -48,6 +51,7 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", readColour
 
 // ---------- Input ----------
 
+// follows and tracks the mouse and makes the animation ripple when clicked
 const pointer = { x: -9999, y: -9999 };
 const ripples = [];   // every click adds one: { x, y, born }
 
@@ -60,7 +64,7 @@ window.addEventListener("pointerdown", (e) => {
   ripples.push({ x: e.clientX, y: e.clientY, born: performance.now() });
 });
 
-// Each tile keeps a hover value that eases between 0 and 1
+// each tile keeps a hover value that eases between 0 and 1
 const tiles = [...document.querySelectorAll(".tile")].map((el) => {
   const tile = {
     box: el.querySelector(".art"),
@@ -74,9 +78,25 @@ const tiles = [...document.querySelectorAll(".tile")].map((el) => {
 });
 
 
+// ---------- Band ----------
+// the page is lighter at the top and darker grey from "Select Works" down
+// the grey is painted here, under the dots, so the field stays visible on it
+
+const bandStart = document.querySelector("[data-band-start]");
+
+function drawBand() {
+  bandLayer.clear();
+  if (!bandStart) return;
+
+  const top = Math.max(0, bandStart.getBoundingClientRect().top);
+  if (top < window.innerHeight) {
+    bandLayer.rect(0, top, window.innerWidth, window.innerHeight - top).fill(colours.band);
+  }
+}
+
+
 // ---------- Dot field ----------
-// Every dot has a home position and a current position.
-// Forces push it away; a spring pulls it home again.
+// the dot grid background, and a function that fills the window with evenly spaced dots
 
 const SPACING = 28;
 const PUSH_RADIUS = 150;
@@ -94,7 +114,7 @@ function buildField() {
   }
 }
 
-// Push a dot away from a point, stronger when closer
+// push a dot away from a point, stronger when closer
 function pushAway(dot, fromX, fromY, radius, strength) {
   const dx = dot.x - fromX;
   const dy = dot.y - fromY;
@@ -107,21 +127,18 @@ function pushAway(dot, fromX, fromY, radius, strength) {
 }
 
 function updateField(now) {
-  // Forget ripples that have faded out
+  // pushes the dots away inf a ripple effect to then come back and settle after a moment
   while (ripples.length && now - ripples[0].born > RIPPLE_LIFE) ripples.shift();
 
   for (const dot of dots) {
     pushAway(dot, pointer.x, pointer.y, PUSH_RADIUS, 1.2);
 
-    // A ripple is a ring that grows; only dots near the ring get pushed
     for (const ripple of ripples) {
       const age = now - ripple.born;
       const ringRadius = (age / 1000) * RIPPLE_SPEED;
       const fromRing = Math.abs(Math.hypot(dot.x - ripple.x, dot.y - ripple.y) - ringRadius);
       if (fromRing < 20) pushAway(dot, ripple.x, ripple.y, ringRadius + 20, 3 * (1 - age / RIPPLE_LIFE));
     }
-
-    // Spring home, with friction so it settles
     dot.vx = (dot.vx + (dot.homeX - dot.x) * 0.06) * 0.82;
     dot.vy = (dot.vy + (dot.homeY - dot.y) * 0.06) * 0.82;
     dot.x += dot.vx;
@@ -132,14 +149,14 @@ function updateField(now) {
 function drawField() {
   fieldLayer.clear();
 
-  // Resting dots in grey, moving dots in the accent colour
+  // resting dots in a soft red, moving dots in the bright red-orange
   const moving = [];
   for (const dot of dots) {
     const offset = Math.abs(dot.x - dot.homeX) + Math.abs(dot.y - dot.homeY);
     if (offset > 3) moving.push(dot);
     else fieldLayer.rect(dot.x - 1, dot.y - 1, 2, 2);
   }
-  fieldLayer.fill({ color: colours.muted, alpha: 0.4 });
+  fieldLayer.fill({ color: colours.muted, alpha: 0.3 });
 
   for (const dot of moving) fieldLayer.rect(dot.x - 1.5, dot.y - 1.5, 3, 3);
   fieldLayer.fill(colours.accent);
@@ -169,6 +186,28 @@ const random = seededRandom(7);
 const scatterPoints = Array.from({ length: 48 }, () => ({ x: random(), y: random(), phase: random() * 6.28 }));
 
 const motifs = {
+  // Hero: stacked waveforms, like sound turning into lines; louder on hover
+  wave(g, x, y, w, h, t, hover) {
+    const lines = 16, steps = 64;
+    const left = x + w * 0.08, span = w * 0.84;
+
+    for (let i = 0; i < lines; i++) {
+      const baseY = y + h * (0.14 + 0.72 * (i / (lines - 1)));
+      const loudness = 0.4 + 0.6 * Math.abs(Math.sin(t * 0.6 + i * 0.45));
+      const amplitude = h * 0.03 * loudness * (1 + hover * 1.5);
+
+      for (let s = 0; s <= steps; s++) {
+        const u = s / steps;
+        const envelope = Math.sin(u * Math.PI);   // quiet at both ends
+        const px = left + span * u;
+        const py = baseY + Math.sin(u * 18 + t * 2.2 + i * 0.6) * amplitude * envelope;
+        if (s === 0) g.moveTo(px, py);
+        else g.lineTo(px, py);
+      }
+    }
+    g.stroke({ width: 1.25, color: hover > 0.5 ? colours.accent : colours.ink, alpha: 0.9 });
+  },
+
   // Bloom: petals that open on hover
   bloom(g, x, y, w, h, t, hover) {
     const cx = x + w / 2, cy = y + h / 2;
@@ -190,7 +229,7 @@ const motifs = {
     g.stroke({ width: 1.25, color: colours.ink });
   },
 
-  // Four Idols: four figures built from stacked bars; hover makes them stand still
+  // Stacked bars that sway; hover makes them stand still, also chnages colours when standing still
   idols(g, x, y, w, h, t, hover) {
     const columns = 4, rows = 12;
     const columnWidth = (w * 0.8) / columns;
@@ -208,7 +247,7 @@ const motifs = {
     g.fill(hover > 0.5 ? colours.accent : colours.ink);
   },
 
-  // The Unfinder: drifting points that find each other on hover
+  // Drifting points that find each other on hover, chnages colour when hovering
   scatter(g, x, y, w, h, t, hover) {
     const points = scatterPoints.map((p) => ({
       x: x + w * (0.1 + 0.8 * p.x) + Math.sin(t * 0.7 + p.phase) * 10,
@@ -230,7 +269,7 @@ const motifs = {
     g.fill(colours.ink);
   },
 
-  // Bounded: cells that grow and shrink inside a fixed frame
+  // Cells that grow and shrink inside a fixed frame, chnages colour when hovering
   grid(g, x, y, w, h, t, hover) {
     const columns = 8, rows = 6;
     const cellW = (w * 0.8) / columns, cellH = (h * 0.8) / rows;
@@ -247,7 +286,7 @@ const motifs = {
     g.rect(x + w * 0.1, y + h * 0.1, w * 0.8, h * 0.8).stroke({ width: 1.5, color: colours.ink });
   },
 
-  // Lightmotif: rings spreading out, like a note going into a microphone
+  // Rings spreading out, like a note going into a microphone, chnages colour when hovering
   rings(g, x, y, w, h, t, hover) {
     const cx = x + w / 2, cy = y + h / 2;
     const maxRadius = Math.min(w, h) * 0.45;
@@ -264,7 +303,7 @@ const motifs = {
     g.circle(cx, cy, 5 + hover * 4).fill(colours.ink);
   },
 
-  // xan / pool: nodes and the links between them
+  // Nodes and the links between them
   links(g, x, y, w, h, t, hover) {
     const count = 7;
     const cx = x + w / 2, cy = y + h / 2;
@@ -308,6 +347,7 @@ function drawTiles(time) {
 
 // ---------- Frame loop ----------
 
+// Everything that moves gets updated
 let time = 0;
 
 app.ticker.add((ticker) => {
@@ -315,6 +355,7 @@ app.ticker.add((ticker) => {
   if (!reduceMotion || anyHover) time += ticker.deltaMS / 1000;
 
   const now = performance.now();
+  drawBand();
   updateField(now);
   drawField();
   drawTiles(time);
