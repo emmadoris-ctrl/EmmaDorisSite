@@ -4,7 +4,8 @@
 // One PixiJS canvas sits behind the page and draws three things:
 //   1. the darker grey band behind the lower half of the page
 //   2. a field of dots that the pointer pushes and clicks ripple through
-//   3. a generative image inside every project tile (and the hero)
+//   3. a generative image inside any tile that still has a data-motif
+//      (tiles with a photo or video are left alone)
 //
 // Structure:
 //   setup -> colours -> input -> band -> dot field -> motifs -> frame loop
@@ -64,11 +65,14 @@ window.addEventListener("pointerdown", (e) => {
   ripples.push({ x: e.clientX, y: e.clientY, born: performance.now() });
 });
 
-// each tile keeps a hover value that eases between 0 and 1
-const tiles = [...document.querySelectorAll(".tile")].map((el) => {
+// each motif box keeps a hover value that eases between 0 and 1
+// Only boxes with a data-motif get a drawing, so tiles that show a photo
+// or video (class "media") are skipped instead of crashing the script.
+const tiles = [...document.querySelectorAll(".art[data-motif]")].map((box) => {
+  const el = box.closest(".tile");   // the whole tile, so hovering the title counts too
   const tile = {
-    box: el.querySelector(".art"),
-    motif: el.querySelector(".art").dataset.motif,
+    box,
+    motif: box.dataset.motif,
     hover: 0,
     target: 0,
   };

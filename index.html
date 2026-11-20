@@ -36,12 +36,16 @@
       <div class="hero">
         <div class="hero-text">
           <p>Based in Stockholm, Emma is a design student with experience in music and visuals.</p>
-          <p>This will be evident in a new design project, <em>The Emma Rave</em>, where she and another designer, Emma Lette, invite you to experience a project where music influences visuals through creative coding.</p>
+          <p>This will be evident in a new design project, <em>The Emma Rave</em>, where she and another designer, Emma Lette, invite you to experience a project where music influences visuals through creative coding.</p> 
+          <p>The Emma rave: An instillation where the music you create controls the art, a visual spectacle using the different parameters of sound. Use the piano and your voice to create your own soundscape.</p>
+          <p>The different paremeters of sound and what they influence: pitch becomes colour , high or low notes make the brush float up or sink down, volume sets brush size and speed, and how long a note is held makes the brush curl.</p>
         </div>
 
-        <!-- generative waveform image -->
+        <!-- hero artwork: looping screen recording of the visuals -->
         <figure class="tile hero-art">
-          <div class="art" data-motif="wave"></div>
+          <div class="media">
+            <video src="recording.mp4" poster="recording-poster.jpg" autoplay muted loop playsinline aria-label="Screen recording of soft, colourful blobs moving to music"></video>
+          </div>
           <figcaption>
             <span class="name">Emma Doris Morcos</span>
             <em>Design student, music &amp; visuals</em>
@@ -54,35 +58,47 @@
     <section id="work" class="work" data-band-start aria-labelledby="work-label">
       <h2 id="work-label" class="label">Select Works</h2>
 
-      <!-- Each data-motif names a drawing function in js/main.js -->
+      <!-- Each tile shows one artwork from the assets/work folder -->
       <ul class="grid">
         <li class="tile">
-          <div class="art" data-motif="bloom"></div>
+          <div class="media">
+            <video src="performance.mp4" poster="performance-poster.jpg" autoplay muted loop playsinline aria-label="Live performance with keyboard and guitar in front of a screen of generative visuals"></video>
+          </div>
           <h3 class="title">The Emma Rave</h3>
           <p class="soon">Project visuals coming soon</p>
         </li>
         <li class="tile">
-          <div class="art" data-motif="idols"></div>
+          <div class="media">
+            <img src="fun-times.jpg" alt="Musicians playing keyboard and guitar under blue light, with colourful visuals" loading="lazy">
+          </div>
           <h3 class="title">Project 02</h3>
           <p class="soon">Project visuals coming soon</p>
         </li>
         <li class="tile">
-          <div class="art" data-motif="scatter"></div>
+          <div class="media">
+            <img src="showing.jpg" alt="Visitors watching a blue screen of glowing circles behind a microphone" loading="lazy">
+          </div>
           <h3 class="title">Project 03</h3>
           <p class="soon">Project visuals coming soon</p>
         </li>
         <li class="tile">
-          <div class="art" data-motif="grid"></div>
+          <div class="media">
+            <img src="testing.jpg" alt="generative visuals on a screen in a dark room" loading="lazy">
+          </div>
           <h3 class="title">Project 04</h3>
           <p class="soon">Project visuals coming soon</p>
         </li>
         <li class="tile">
-          <div class="art" data-motif="rings"></div>
+          <div class="media">
+            <img src="screenshot-art.jpg" alt="Soft yellow, red and green shapes melting into a magenta background" loading="lazy">
+          </div>
           <h3 class="title">Project 05</h3>
           <p class="soon">Project visuals coming soon</p>
         </li>
         <li class="tile">
-          <div class="art" data-motif="links"></div>
+          <div class="media">
+            <img src="started.jpg" alt="Sound drawing: thick green, blue and purple strokes with live mic and keyboard readings" loading="lazy">
+          </div>
           <h3 class="title">Project 06</h3>
           <p class="soon">Project visuals coming soon</p>
         </li>

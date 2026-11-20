@@ -179,6 +179,22 @@ main { padding: 0 var(--edge); }
 /* every motif box keeps the same shape */
 .art { aspect-ratio: 4 / 3; }
 
+/* artwork boxes (photos and videos) use the same 4:3 shape */
+.media {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;          /* crops anything that sticks out */
+  background: var(--tile);   /* shows while the image is loading */
+}
+
+/* the photo or video fills its box without stretching */
+.media img,
+.media video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 
 /* ---------- 5. Work grid ---------- */
 .work { padding: clamp(2.5rem, 6vh, 4rem) 0 clamp(3rem, 8vh, 5rem); }
